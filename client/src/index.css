@@ -15,9 +15,6 @@
 @layer components {
   .hide-scrollbar { scrollbar-width: none; }
   .hide-scrollbar::-webkit-scrollbar { display: none; }
-  .hero-backdrop-gradient {
-    background: linear-gradient(to right, rgba(10, 10, 15, 0.97) 0%, rgba(10, 10, 15, 0.82) 35%, rgba(10, 10, 15, 0.48) 62%, rgba(10, 10, 15, 0.12) 100%);
-  }
   .page-shell { @apply mx-auto w-full max-w-[1600px] px-5 py-10 sm:px-8 lg:px-12; }
   .section-kicker { @apply mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-amber; }
   .page-title { @apply font-display text-3xl font-bold tracking-tight text-zinc-50 sm:text-4xl; }
@@ -55,6 +52,3 @@ html.light .hover\:bg-white\/\[0\.04\]:hover { background-color: #f4f4f5; }
 html.light .group:hover .group-hover\:bg-\[\#1a1a24\] { background-color: #f4f4f5; }
 html.light .site-navbar { border-color: #d4d4d8; background-color: rgb(255 255 255 / 0.86); }
 html.light .site-footer { border-color: #d4d4d8; background-color: #ffffff; }
-html.light .hero-banner { background-color: #0a0a0f; }
-html.light .hero-banner .text-zinc-100,
-html.light .hero-banner .text-zinc-300 { color: #f4f4f5; }
