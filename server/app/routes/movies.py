@@ -4,7 +4,7 @@ import asyncio
 import logging
 
 import httpx
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Path, Query, status
 
 from app.core.config import settings
 
@@ -17,9 +17,10 @@ logger = logging.getLogger(__name__)
 async def tmdb_get(path: str, params: dict | None = None) -> dict:
     """Make one TMDB GET request without exposing TMDB's raw errors to clients."""
     if not settings.tmdb_api_key:
+        logger.error("TMDB_API_KEY is missing from server configuration")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="TMDB_API_KEY is missing from server configuration",
+            detail="Movie service is unavailable",
         )
 
     query_params = {"api_key": settings.tmdb_api_key, **(params or {})}
@@ -124,8 +125,8 @@ async def get_trending_movies():
 
 @router.get("/search")
 async def search_movies(
-    query: str | None = Query(default=None, description="Movie title to search for"),
-    genre: int | None = Query(default=None, description="TMDB genre ID to filter by"),
+    query: str | None = Query(default=None, max_length=100, description="Movie title to search for"),
+    genre: int | None = Query(default=None, gt=0, le=100_000, description="TMDB genre ID to filter by"),
 ):
     """Search by title, or use a genre ID to discover movies in that genre.
 
@@ -155,7 +156,7 @@ async def get_movie_genres():
 
 
 @router.get("/{movie_id}/trailer")
-async def get_movie_trailer(movie_id: int):
+async def get_movie_trailer(movie_id: int = Path(gt=0, le=10_000_000)):
     """Return the first available YouTube trailer key for iframe embedding."""
     data = await tmdb_get(f"/movie/{movie_id}/videos")
     trailer = next(
@@ -170,7 +171,7 @@ async def get_movie_trailer(movie_id: int):
 
 
 @router.get("/{movie_id}")
-async def get_movie_details(movie_id: int):
+async def get_movie_details(movie_id: int = Path(gt=0, le=10_000_000)):
     """Return the specific fields needed for the movie details page."""
     movie = await tmdb_get(f"/movie/{movie_id}")
     return {

@@ -27,9 +27,14 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
 
 def _get_secret_key() -> str:
     """Fail safely if the deployment forgot to configure its JWT secret."""
-    if not settings.secret_key:
-        raise RuntimeError("SECRET_KEY is missing. Add it to server/.env.")
+    if len(settings.secret_key) < 32:
+        raise RuntimeError("SECRET_KEY must be a private random value of at least 32 characters.")
     return settings.secret_key
+
+
+def validate_security_settings() -> None:
+    """Validate security-critical configuration during application startup."""
+    _get_secret_key()
 
 
 def create_access_token(data: dict) -> str:

@@ -49,6 +49,23 @@ class Settings:
     tmdb_api_key = os.getenv("TMDB_API_KEY", "")
     # Keep this long, random value private. It signs every user access token.
     secret_key = os.getenv("SECRET_KEY", "")
+    environment = os.getenv("ENVIRONMENT", "development").lower()
+    frontend_origins = os.getenv("FRONTEND_ORIGINS", "")
+
+    def cors_origins(self) -> list[str]:
+        """Return explicit browser origins, never a credentialed wildcard."""
+        configured_origins = [
+            origin.strip().rstrip("/")
+            for origin in self.frontend_origins.split(",")
+            if origin.strip()
+        ]
+        if configured_origins:
+            return configured_origins
+        if self.environment == "production":
+            raise RuntimeError(
+                "FRONTEND_ORIGINS must be set in production, for example https://app.example.com"
+            )
+        return ["http://localhost:5173", "http://127.0.0.1:5173"]
 
 
 settings = Settings()

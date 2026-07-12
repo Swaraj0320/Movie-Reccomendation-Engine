@@ -23,6 +23,10 @@ async def connect_to_mongo() -> None:
 
     # A ping makes connection errors visible during startup, not on the first request.
     await client.admin.command("ping")
+    # These constraints make concurrent writes safe as well as application-level checks.
+    await database.users.create_index("email", unique=True)
+    await database.ratings.create_index([("user_id", 1), ("movie_id", 1)], unique=True)
+    await database.watchlist.create_index([("user_id", 1), ("movie_id", 1)], unique=True)
 
 
 async def close_mongo_connection() -> None:

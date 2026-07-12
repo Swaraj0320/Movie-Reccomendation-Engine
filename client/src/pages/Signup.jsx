@@ -35,7 +35,7 @@ function Signup() {
         <form className="mt-7 space-y-4" onSubmit={handleSubmit}>
           <input className="w-full rounded-xl border border-line bg-ink px-4 py-3 text-sm outline-none placeholder:text-zinc-600 focus:border-amber" placeholder="Your name" value={name} onChange={(event) => setName(event.target.value)} required />
           <input className="w-full rounded-xl border border-line bg-ink px-4 py-3 text-sm outline-none placeholder:text-zinc-600 focus:border-amber" placeholder="Email address" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
-          <input className="w-full rounded-xl border border-line bg-ink px-4 py-3 text-sm outline-none placeholder:text-zinc-600 focus:border-amber" placeholder="Create password (6+ characters)" type="password" value={password} onChange={(event) => setPassword(event.target.value)} minLength="6" required />
+          <input className="w-full rounded-xl border border-line bg-ink px-4 py-3 text-sm outline-none placeholder:text-zinc-600 focus:border-amber" placeholder="Password: 8+ chars, upper, lower & number" type="password" value={password} onChange={(event) => setPassword(event.target.value)} minLength="8" required />
           {error && <p className="rounded-xl border border-red-900/60 bg-red-950/30 px-3 py-2 text-sm text-red-300">{error}</p>}
           <button className="primary-button w-full disabled:cursor-not-allowed disabled:opacity-60" type="submit" disabled={isSubmitting}>{isSubmitting ? "Creating account…" : "Create account"}</button>
         </form>

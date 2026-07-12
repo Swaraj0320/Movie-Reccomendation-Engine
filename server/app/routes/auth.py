@@ -1,9 +1,11 @@
 """Registration, login, and current-user authentication dependency."""
 
 from bson import ObjectId
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from pymongo.errors import DuplicateKeyError
 
+from app.core.rate_limit import enforce_rate_limit
 from app.core.security import (
     create_access_token,
     hash_password,
@@ -31,8 +33,9 @@ def user_to_response(user: dict) -> UserOut:
 
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
-async def register(user: UserCreate):
+async def register(user: UserCreate, request: Request):
     """Create a user account and immediately issue a seven-day access token."""
+    enforce_rate_limit(request, "register", max_attempts=5, window_seconds=3600)
     db = get_database()
     email = user.email.strip().lower()
 
@@ -46,7 +49,10 @@ async def register(user: UserCreate):
         "password": hash_password(user.password),
         "preferences": [],
     }
-    result = await db.users.insert_one(user_document)
+    try:
+        result = await db.users.insert_one(user_document)
+    except DuplicateKeyError as error:
+        raise HTTPException(status_code=400, detail="Email already registered") from error
     user_document["_id"] = result.inserted_id
 
     token = create_access_token({"sub": str(result.inserted_id)})
@@ -54,8 +60,9 @@ async def register(user: UserCreate):
 
 
 @router.post("/login")
-async def login(credentials: UserLogin):
+async def login(credentials: UserLogin, request: Request):
     """Verify credentials and return a fresh JWT when they are correct."""
+    enforce_rate_limit(request, "login", max_attempts=10, window_seconds=900)
     db = get_database()
     email = credentials.email.strip().lower()
     user = await db.users.find_one({"email": email})

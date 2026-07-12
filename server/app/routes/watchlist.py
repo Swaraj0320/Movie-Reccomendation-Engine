@@ -2,7 +2,8 @@
 
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Path, status
+from pymongo.errors import DuplicateKeyError
 
 from app.db import get_database
 from app.models.user import UserOut
@@ -45,7 +46,14 @@ async def add_to_watchlist(
         **saved_movie,
         "created_at": datetime.now(timezone.utc),
     }
-    await watchlist.insert_one(document)
+    try:
+        await watchlist.insert_one(document)
+    except DuplicateKeyError:
+        # A concurrent request may have saved the same movie after the first check.
+        existing = await watchlist.find_one(
+            {"user_id": current_user.id, "movie_id": item.movie_id}
+        )
+        return {"message": "Movie is already in watchlist", "movie": watchlist_movie(existing)}
     return {"message": "Movie added to watchlist", "movie": saved_movie}
 
 
@@ -53,12 +61,12 @@ async def add_to_watchlist(
 async def get_watchlist(current_user: UserOut = Depends(get_current_user)):
     """Return the authenticated user's saved movie cards, newest first."""
     cursor = get_database().watchlist.find({"user_id": current_user.id}, {"_id": 0, "user_id": 0}).sort("created_at", -1)
-    return await cursor.to_list(length=None)
+    return await cursor.to_list(length=200)
 
 
 @router.delete("/{movie_id}")
 async def remove_from_watchlist(
-    movie_id: int,
+    movie_id: int = Path(gt=0, le=10_000_000),
     current_user: UserOut = Depends(get_current_user),
 ):
     """Remove one movie from the authenticated user's watchlist."""

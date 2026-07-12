@@ -1,5 +1,7 @@
 """Simple filter-based movie recommendations powered by TMDB Discover."""
 
+from datetime import datetime
+
 from fastapi import APIRouter, HTTPException, Query
 
 from app.routes.movies import tmdb_get
@@ -39,7 +41,10 @@ def clean_genres(genres: str | None) -> str | None:
         return None
 
     genre_ids = [genre_id.strip() for genre_id in genres.split(",")]
-    if not all(genre_id.isdigit() and int(genre_id) > 0 for genre_id in genre_ids):
+    if len(genre_ids) > 10 or not all(
+        genre_id.isdigit() and 0 < int(genre_id) <= 100_000
+        for genre_id in genre_ids
+    ):
         raise HTTPException(
             status_code=422,
             detail="genres must be comma-separated positive TMDB genre IDs",
@@ -57,15 +62,22 @@ async def get_recommendation_languages():
 async def get_recommendations(
     genres: str | None = Query(
         default=None,
+        max_length=100,
         description="Comma-separated TMDB genre IDs, for example: 28,18,53",
     ),
     language: str | None = Query(
         default=None,
         min_length=2,
         max_length=2,
+        pattern="^[a-zA-Z]{2}$",
         description="ISO 639-1 language code, for example: hi or en",
     ),
-    year: int | None = Query(default=None, ge=1888, description="Release year"),
+    year: int | None = Query(
+        default=None,
+        ge=1888,
+        le=datetime.now().year + 1,
+        description="Release year",
+    ),
 ):
     """Return popular TMDB movies matching the selected preferences.
 

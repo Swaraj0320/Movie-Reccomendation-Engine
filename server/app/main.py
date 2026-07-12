@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
+from app.core.security import validate_security_settings
 from app.db import close_mongo_connection, connect_to_mongo
 from app.routes.auth import router as auth_router
 from app.routes.movies import router as movies_router
@@ -18,6 +19,7 @@ from app.routes.watchlist import router as watchlist_router
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Open shared resources at startup and release them at shutdown."""
+    validate_security_settings()
     await connect_to_mongo()
     yield
     await close_mongo_connection()
@@ -25,10 +27,10 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title=settings.project_name, lifespan=lifespan)
 
-# Vite normally runs on port 5173. Add the deployed Vercel URL here later.
+# Development defaults are local-only; production requires FRONTEND_ORIGINS.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=settings.cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

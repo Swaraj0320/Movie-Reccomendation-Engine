@@ -2,7 +2,8 @@
 
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Path, status
+from pymongo.errors import DuplicateKeyError
 
 from app.db import get_database
 from app.models.rating import RatingCreate
@@ -31,14 +32,22 @@ async def save_rating(
         "movie_id": rating_data.movie_id,
     }
 
-    await ratings.update_one(
-        rating_filter,
-        {
-            "$set": {"rating": rating_data.rating, "timestamp": now},
-            "$setOnInsert": rating_filter,
-        },
-        upsert=True,
-    )
+    try:
+        await ratings.update_one(
+            rating_filter,
+            {
+                "$set": {"rating": rating_data.rating, "timestamp": now},
+                "$setOnInsert": rating_filter,
+            },
+            upsert=True,
+        )
+    except DuplicateKeyError:
+        # The compound unique index can only race when two first ratings arrive
+        # simultaneously. The second request safely becomes an update.
+        await ratings.update_one(
+            rating_filter,
+            {"$set": {"rating": rating_data.rating, "timestamp": now}},
+        )
 
     return {
         "message": "Rating saved",
@@ -58,12 +67,12 @@ async def get_user_ratings(
         .ratings.find({"user_id": current_user.id}, {"_id": 0})
         .sort("timestamp", -1)
     )
-    return await cursor.to_list(length=None)
+    return await cursor.to_list(length=200)
 
 
 @router.get("/{movie_id}")
 async def get_movie_rating(
-    movie_id: int,
+    movie_id: int = Path(gt=0, le=10_000_000),
     current_user: UserOut = Depends(get_current_user),
 ):
     """Return this user's score and the all-user average for a movie."""
