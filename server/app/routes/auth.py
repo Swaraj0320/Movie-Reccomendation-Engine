@@ -25,6 +25,8 @@ def user_to_response(user: dict) -> UserOut:
         name=user["name"],
         email=user["email"],
         preferences=user.get("preferences", []),
+        phone=user.get("phone"),
+        profile_picture_url=user.get("profile_picture_url"),
     )
 
 

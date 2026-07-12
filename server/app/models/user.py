@@ -25,3 +25,13 @@ class UserOut(BaseModel):
     name: str
     email: str
     preferences: list[int] = Field(default_factory=list)
+    phone: str | None = None
+    profile_picture_url: str | None = None
+
+
+class UserProfileUpdate(BaseModel):
+    """Editable fields for a user's profile."""
+
+    name: str | None = Field(default=None, min_length=1, max_length=100)
+    phone: str | None = Field(default=None, max_length=30)
+    profile_picture_url: str | None = Field(default=None, max_length=2048)

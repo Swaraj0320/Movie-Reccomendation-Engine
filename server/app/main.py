@@ -11,6 +11,8 @@ from app.routes.auth import router as auth_router
 from app.routes.movies import router as movies_router
 from app.routes.recommend import router as recommend_router
 from app.routes.ratings import router as ratings_router
+from app.routes.user import router as user_router
+from app.routes.watchlist import router as watchlist_router
 
 
 @asynccontextmanager
@@ -40,6 +42,9 @@ app.include_router(movies_router, prefix=f"{settings.api_prefix}/movies")
 app.include_router(recommend_router, prefix=f"{settings.api_prefix}/recommend")
 # Rating endpoints use get_current_user, so every request requires a Bearer JWT.
 app.include_router(ratings_router, prefix=f"{settings.api_prefix}/ratings")
+# User profile and saved watchlist endpoints are protected by their own routers.
+app.include_router(user_router, prefix=f"{settings.api_prefix}/user")
+app.include_router(watchlist_router, prefix=f"{settings.api_prefix}/watchlist")
 
 
 @app.get("/", tags=["Health"])

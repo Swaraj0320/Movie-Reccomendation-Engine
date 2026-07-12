@@ -1,5 +1,6 @@
 """Read-only movie data endpoints backed by The Movie Database (TMDB) API."""
 
+import asyncio
 import logging
 
 import httpx
@@ -66,14 +67,59 @@ def movie_summary(movie: dict) -> dict:
         "overview": movie.get("overview", ""),
         "vote_average": movie.get("vote_average", 0),
         "genre_ids": movie.get("genre_ids", []),
+        "release_date": movie.get("release_date"),
     }
 
 
 @router.get("/trending")
 async def get_trending_movies():
-    """Return movies that are trending this week on TMDB."""
-    data = await tmdb_get("/trending/movie/week")
-    return [movie_summary(movie) for movie in data.get("results", [])]
+    """Return a broad, India-aware mix of Hindi and global trending movies.
+
+    TMDB's trending endpoint has no region parameter. Two popular Hindi discover
+    pages (restricted to India) are therefore interleaved with two global
+    trending pages, then de-duplicated by TMDB ID.
+    """
+    global_first, global_second, hindi_first, hindi_second = await asyncio.gather(
+        tmdb_get("/trending/movie/week", {"page": 1}),
+        tmdb_get("/trending/movie/week", {"page": 2}),
+        tmdb_get(
+            "/discover/movie",
+            {
+                "with_original_language": "hi",
+                "region": "IN",
+                "sort_by": "popularity.desc",
+                "page": 1,
+            },
+        ),
+        tmdb_get(
+            "/discover/movie",
+            {
+                "with_original_language": "hi",
+                "region": "IN",
+                "sort_by": "popularity.desc",
+                "page": 2,
+            },
+        ),
+    )
+    global_movies = global_first.get("results", []) + global_second.get("results", [])
+    hindi_movies = hindi_first.get("results", []) + hindi_second.get("results", [])
+
+    mixed_movies = []
+    for index in range(max(len(hindi_movies), len(global_movies))):
+        # Lead each group with Hindi content while retaining a varied global mix.
+        if index < len(hindi_movies):
+            mixed_movies.append(hindi_movies[index])
+        if index < len(global_movies):
+            mixed_movies.append(global_movies[index])
+
+    unique_movies = []
+    seen_ids = set()
+    for movie in mixed_movies:
+        if movie["id"] not in seen_ids:
+            seen_ids.add(movie["id"])
+            unique_movies.append(movie_summary(movie))
+
+    return unique_movies[:40]
 
 
 @router.get("/search")

@@ -1,0 +1,7 @@
+const sections = [["Acceptance of Terms", "By accessing or using NFAK Recommendation Engine, you agree to use this educational service in a lawful and responsible manner."], ["Use of Service", "The platform is provided for personal movie discovery. Do not attempt to interfere with the service, misuse its features, or access accounts that are not your own."], ["User Accounts", "You are responsible for protecting your account credentials and for activity performed through your account."], ["Content Disclaimer", "Movie titles, images, metadata, and related information are supplied by TMDB. Availability, accuracy, and suitability of content are not guaranteed by this project."], ["Limitation of Liability", "This academic project is provided as-is for educational purposes and is not liable for loss or damage arising from its use."], ["Changes to Terms", "These terms may be updated as the project evolves. Continued use after an update indicates acceptance of the revised terms."]];
+
+function Terms() {
+  return <div className="page-shell"><div className="max-w-3xl"><p className="section-kicker">Legal</p><h1 className="page-title">Terms of Use</h1><p className="mt-4 text-sm text-zinc-500">Last updated: {new Date().getFullYear()}</p><div className="mt-8 space-y-7">{sections.map(([title, content]) => <section key={title}><h2 className="font-display text-xl font-bold text-zinc-100">{title}</h2><p className="mt-2 leading-7 text-zinc-400">{content}</p></section>)}</div></div></div>;
+}
+
+export default Terms;
