@@ -15,6 +15,9 @@
 @layer components {
   .hide-scrollbar { scrollbar-width: none; }
   .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .hero-image-overlay {
+    background: linear-gradient(to right, rgba(10, 10, 10, 0.9) 0%, rgba(10, 10, 10, 0.3) 100%);
+  }
   .page-shell { @apply mx-auto w-full max-w-[1600px] px-5 py-10 sm:px-8 lg:px-12; }
   .section-kicker { @apply mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-amber; }
   .page-title { @apply font-display text-3xl font-bold tracking-tight text-zinc-50 sm:text-4xl; }
