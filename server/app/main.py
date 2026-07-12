@@ -9,6 +9,7 @@ from app.core.config import settings
 from app.db import close_mongo_connection, connect_to_mongo
 from app.routes.auth import router as auth_router
 from app.routes.movies import router as movies_router
+from app.routes.ratings import router as ratings_router
 
 
 @asynccontextmanager
@@ -34,6 +35,8 @@ app.add_middleware(
 app.include_router(auth_router, prefix=f"{settings.api_prefix}/auth")
 # Movie browsing data is public, so these endpoints do not require a JWT.
 app.include_router(movies_router, prefix=f"{settings.api_prefix}/movies")
+# Rating endpoints use get_current_user, so every request requires a Bearer JWT.
+app.include_router(ratings_router, prefix=f"{settings.api_prefix}/ratings")
 
 
 @app.get("/", tags=["Health"])
