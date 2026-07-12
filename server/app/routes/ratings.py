@@ -2,7 +2,7 @@
 
 from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, Path, status
+from fastapi import APIRouter, Depends, HTTPException, Path, status
 from pymongo.errors import DuplicateKeyError
 
 from app.db import get_database
@@ -96,3 +96,17 @@ async def get_movie_rating(
         "user_rating": user_rating["rating"] if user_rating else None,
         "average_rating": round(average_rating, 1) if average_rating is not None else None,
     }
+
+
+@router.delete("/{movie_id}")
+async def delete_rating(
+    movie_id: int = Path(gt=0, le=10_000_000),
+    current_user: UserOut = Depends(get_current_user),
+):
+    """Remove the authenticated user's rating for one movie."""
+    result = await get_database().ratings.delete_one(
+        {"user_id": current_user.id, "movie_id": movie_id}
+    )
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Rating not found")
+    return {"message": "Rating removed", "movie_id": movie_id}

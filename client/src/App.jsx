@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 
 import Footer from "./components/Footer";
+import CursorGlow from "./components/CursorGlow";
 import Navbar from "./components/Navbar";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
@@ -20,6 +21,7 @@ import Watchlist from "./pages/Watchlist";
 function App() {
   return (
     <div className="flex min-h-screen flex-col bg-ink text-zinc-100">
+      <CursorGlow />
       <Navbar />
       <main className="flex-1">
         <Routes>
