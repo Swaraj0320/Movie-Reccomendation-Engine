@@ -38,7 +38,7 @@ function CursorGlow() {
 
   if (!enabled) return null;
 
-  return <div ref={glowRef} aria-hidden="true" className="pointer-events-none fixed left-0 top-0 z-40 h-[380px] w-[380px] rounded-full opacity-[0.13] blur-2xl" style={{ background: "radial-gradient(circle, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.16) 28%, transparent 70%)" }} />;
+  return <div ref={glowRef} aria-hidden="true" className="pointer-events-none fixed left-0 top-0 z-0 h-[380px] w-[380px] rounded-full opacity-[0.13] blur-2xl" style={{ background: "radial-gradient(circle, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0.16) 28%, transparent 70%)" }} />;
 }
 
 export default CursorGlow;
