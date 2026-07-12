@@ -2,6 +2,7 @@ fastapi
 uvicorn[standard]
 motor
 dnspython
+httpx
 passlib[bcrypt]
 bcrypt==4.0.1
 python-jose[cryptography]

@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
 from app.db import close_mongo_connection, connect_to_mongo
 from app.routes.auth import router as auth_router
+from app.routes.movies import router as movies_router
 
 
 @asynccontextmanager
@@ -31,6 +32,8 @@ app.add_middleware(
 
 # All authentication endpoints are grouped under /api/auth.
 app.include_router(auth_router, prefix=f"{settings.api_prefix}/auth")
+# Movie browsing data is public, so these endpoints do not require a JWT.
+app.include_router(movies_router, prefix=f"{settings.api_prefix}/movies")
 
 
 @app.get("/", tags=["Health"])
