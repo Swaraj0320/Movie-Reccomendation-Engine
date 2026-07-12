@@ -47,6 +47,8 @@ class Settings:
     mongodb_url = os.getenv("MONGODB_URL", "")
     mongodb_database = os.getenv("MONGODB_DATABASE", "movie_recommendation")
     tmdb_api_key = os.getenv("TMDB_API_KEY", "")
+    # Keep this long, random value private. It signs every user access token.
+    secret_key = os.getenv("SECRET_KEY", "")
 
 
 settings = Settings()

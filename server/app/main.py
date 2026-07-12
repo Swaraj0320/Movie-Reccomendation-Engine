@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import settings
 from app.db import close_mongo_connection, connect_to_mongo
+from app.routes.auth import router as auth_router
 
 
 @asynccontextmanager
@@ -27,6 +28,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# All authentication endpoints are grouped under /api/auth.
+app.include_router(auth_router, prefix=f"{settings.api_prefix}/auth")
 
 
 @app.get("/", tags=["Health"])
