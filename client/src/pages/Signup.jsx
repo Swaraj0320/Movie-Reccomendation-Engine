@@ -29,6 +29,7 @@ function Signup() {
 
   return (
     <div className="page-shell grid min-h-[calc(100vh-4rem)] place-items-center">
+      <div className="w-full max-w-md">
       <section className="w-full max-w-md rounded-xl border border-line bg-panel p-7 sm:p-9">
         <p className="section-kicker">Start your archive</p>
         <h1 className="page-title">Create an account</h1>
@@ -41,6 +42,8 @@ function Signup() {
         </form>
         <p className="mt-6 text-sm text-zinc-400">Already have an account? <Link className="font-semibold text-amber hover:text-amber-soft" to="/login">Sign in</Link></p>
       </section>
+      <p className="mt-4 text-center text-xs font-normal text-zinc-400">Made by Swaraj &amp; Siddhi</p>
+      </div>
     </div>
   );
 }

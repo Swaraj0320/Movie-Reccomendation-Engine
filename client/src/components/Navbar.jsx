@@ -1,14 +1,16 @@
-import { Clapperboard, LogOut, Menu, Search, UserRound, X } from "lucide-react";
+import { Clapperboard, LogOut, Menu, Moon, Search, Sun, UserRound, X } from "lucide-react";
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 
 const navLinkClass = ({ isActive }) =>
   `relative py-1 text-[11px] font-medium uppercase tracking-[0.16em] transition-colors after:absolute after:inset-x-0 after:-bottom-1 after:h-px after:transition-transform ${isActive ? "text-amber after:scale-x-100 after:bg-amber" : "text-zinc-500 hover:text-zinc-100 after:scale-x-0 after:bg-zinc-400 hover:after:scale-x-100"}`;
 
 function Navbar() {
   const { user, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const [profileOpen, setProfileOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -23,7 +25,7 @@ function Navbar() {
   const closeMobileMenu = () => setMobileOpen(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/[0.08] bg-black/70 backdrop-blur-md">
+    <header className="site-navbar sticky top-0 z-50 border-b border-white/[0.08] bg-black/70 backdrop-blur-md">
       <nav className="relative mx-auto grid h-14 max-w-[1600px] grid-cols-[1fr_auto_1fr] items-center px-5 sm:px-8 lg:px-12">
         <Link to="/" className="flex min-w-0 items-center gap-2 text-zinc-50">
           <Clapperboard size={18} className="shrink-0 text-amber" strokeWidth={1.7} />
@@ -36,6 +38,7 @@ function Navbar() {
         </div>
         <div className="flex items-center justify-self-end gap-1.5 sm:gap-2">
           <Link to="/search" aria-label="Search movies" className="rounded-md p-2 text-zinc-400 transition-colors hover:text-amber"><Search size={17} /></Link>
+          <button onClick={toggleTheme} aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} theme`} title={`Switch to ${theme === "dark" ? "light" : "dark"} theme`} className="rounded-md p-2 text-zinc-400 transition-colors hover:text-amber">{theme === "dark" ? <Sun size={17} /> : <Moon size={17} />}</button>
           {user ? (
             <div className="relative">
               <button onClick={() => setProfileOpen((isOpen) => !isOpen)} aria-label="Open profile menu" aria-expanded={profileOpen} className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-amber/40 bg-[#27231b] font-display text-xs font-medium text-amber transition hover:border-amber">

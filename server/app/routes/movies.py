@@ -65,6 +65,7 @@ def movie_summary(movie: dict) -> dict:
         "id": movie["id"],
         "title": movie.get("title", ""),
         "poster_path": movie.get("poster_path"),
+        "backdrop_path": movie.get("backdrop_path"),
         "overview": movie.get("overview", ""),
         "vote_average": movie.get("vote_average", 0),
         "genre_ids": movie.get("genre_ids", []),

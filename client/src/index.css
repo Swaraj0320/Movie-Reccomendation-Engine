@@ -15,9 +15,46 @@
 @layer components {
   .hide-scrollbar { scrollbar-width: none; }
   .hide-scrollbar::-webkit-scrollbar { display: none; }
+  .hero-backdrop-gradient {
+    background: linear-gradient(to right, rgba(10, 10, 15, 0.97) 0%, rgba(10, 10, 15, 0.82) 35%, rgba(10, 10, 15, 0.48) 62%, rgba(10, 10, 15, 0.12) 100%);
+  }
   .page-shell { @apply mx-auto w-full max-w-[1600px] px-5 py-10 sm:px-8 lg:px-12; }
   .section-kicker { @apply mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-amber; }
   .page-title { @apply font-display text-3xl font-bold tracking-tight text-zinc-50 sm:text-4xl; }
   .primary-button { @apply inline-flex items-center justify-center gap-2 rounded-xl bg-amber px-4 py-2.5 text-sm font-bold text-zinc-950 transition-colors hover:bg-amber-soft focus:outline-none focus:ring-2 focus:ring-amber focus:ring-offset-2 focus:ring-offset-ink; }
   .ghost-button { @apply inline-flex items-center justify-center gap-2 rounded-xl border border-line px-4 py-2.5 text-sm font-semibold text-zinc-200 transition-colors hover:border-zinc-500 hover:bg-panel; }
 }
+
+/* The app defaults to dark; ThemeContext applies .light to <html> for the alternate palette. */
+html.light { color-scheme: light; }
+html.light body { background: #f7f7f8; color: #18181b; }
+html.light .bg-ink,
+html.light .bg-\[\#0a0a0f\],
+html.light .bg-ink\/90 { background-color: #f7f7f8; }
+html.light .bg-panel,
+html.light .bg-\[\#111218\],
+html.light .bg-\[\#15161b\],
+html.light .bg-\[\#171720\],
+html.light .bg-\[\#111217\]\/95 { background-color: #ffffff; }
+html.light .bg-zinc-900 { background-color: #e4e4e7; }
+html.light .border-line,
+html.light .border-white\/10,
+html.light .border-white\/\[0\.06\],
+html.light .border-white\/\[0\.07\],
+html.light .border-white\/\[0\.08\],
+html.light .border-white\/\[0\.09\] { border-color: #d4d4d8; }
+html.light .text-zinc-50,
+html.light .text-zinc-100 { color: #18181b; }
+html.light .text-zinc-200 { color: #27272a; }
+html.light .text-zinc-300 { color: #3f3f46; }
+html.light .text-zinc-400 { color: #52525b; }
+html.light .text-zinc-500 { color: #62626b; }
+html.light .text-zinc-600 { color: #71717a; }
+html.light .text-zinc-700 { color: #52525b; }
+html.light .hover\:bg-white\/\[0\.04\]:hover { background-color: #f4f4f5; }
+html.light .group:hover .group-hover\:bg-\[\#1a1a24\] { background-color: #f4f4f5; }
+html.light .site-navbar { border-color: #d4d4d8; background-color: rgb(255 255 255 / 0.86); }
+html.light .site-footer { border-color: #d4d4d8; background-color: #ffffff; }
+html.light .hero-banner { background-color: #0a0a0f; }
+html.light .hero-banner .text-zinc-100,
+html.light .hero-banner .text-zinc-300 { color: #f4f4f5; }
