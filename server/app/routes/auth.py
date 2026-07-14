@@ -67,26 +67,43 @@ async def register(user: UserCreate, request: Request):
 async def login(credentials: UserLogin, request: Request):
     """Verify credentials and return a fresh JWT when they are correct."""
     enforce_rate_limit(request, "login", max_attempts=10, window_seconds=900)
-    db = get_database()
     email = credentials.email.strip().lower()
+
+    # The administrator is configured outside MongoDB and intentionally has no
+    # user document. Check it before normal database authentication.
+    if (
+        settings.admin_email
+        and settings.admin_password
+        and email == settings.admin_email
+        and credentials.password == settings.admin_password
+    ):
+        admin_user = {
+            "_id": "admin",
+            "name": "Administrator",
+            "email": settings.admin_email,
+            "preferences": [],
+        }
+        token = create_access_token({"sub": "admin", "is_admin": True})
+        return {
+            "access_token": token,
+            "token_type": "bearer",
+            "user": user_to_response(admin_user),
+            "is_admin": True,
+        }
+
+    db = get_database()
     user = await db.users.find_one({"email": email})
 
     # Use the same message for a missing account and an incorrect password.
     if not user or not verify_password(credentials.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    is_admin = bool(
-        settings.admin_email
-        and settings.admin_password
-        and email == settings.admin_email
-        and credentials.password == settings.admin_password
-    )
-    token = create_access_token({"sub": str(user["_id"]), "is_admin": is_admin})
+    token = create_access_token({"sub": str(user["_id"]), "is_admin": False})
     return {
         "access_token": token,
         "token_type": "bearer",
         "user": user_to_response(user),
-        "is_admin": is_admin,
+        "is_admin": False,
     }
 
 
@@ -128,8 +145,17 @@ async def get_current_admin(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
 ) -> UserOut:
     """Require a valid JWT issued for the configured hidden administrator."""
-    current_user = await get_current_user(credentials)
-    payload = decode_access_token(credentials.credentials) if credentials else None
-    if not payload or payload.get("is_admin") is not True:
+    unauthorized = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid or expired authentication token",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    if credentials is None:
+        raise unauthorized
+
+    payload = decode_access_token(credentials.credentials)
+    if not payload:
+        raise unauthorized
+    if payload.get("is_admin") is not True or payload.get("sub") != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
-    return current_user
+    return UserOut(id="admin", name="Administrator", email=settings.admin_email)
