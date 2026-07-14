@@ -69,21 +69,20 @@ async def login(credentials: UserLogin, request: Request):
     enforce_rate_limit(request, "login", max_attempts=10, window_seconds=900)
     email = credentials.email.strip().lower()
 
-    # The administrator is configured outside MongoDB and intentionally has no
-    # user document. Check it before normal database authentication.
+    # The administrator has a reserved MongoDB user record created at startup,
+    # but still authenticates directly from environment credentials.
     if (
         settings.admin_email
         and settings.admin_password
         and email == settings.admin_email
         and credentials.password == settings.admin_password
     ):
-        admin_user = {
-            "_id": "admin",
-            "name": "Administrator",
-            "email": settings.admin_email,
-            "preferences": [],
-        }
-        token = create_access_token({"sub": "admin", "is_admin": True})
+        admin_user = await get_database().users.find_one(
+            {"_id": ObjectId(settings.admin_user_id)}
+        )
+        if not admin_user:
+            raise HTTPException(status_code=503, detail="Administrator account is not ready")
+        token = create_access_token({"sub": settings.admin_user_id, "is_admin": True})
         return {
             "access_token": token,
             "token_type": "bearer",
@@ -156,6 +155,6 @@ async def get_current_admin(
     payload = decode_access_token(credentials.credentials)
     if not payload:
         raise unauthorized
-    if payload.get("is_admin") is not True or payload.get("sub") != "admin":
+    if payload.get("is_admin") is not True or payload.get("sub") != settings.admin_user_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
-    return UserOut(id="admin", name="Administrator", email=settings.admin_email)
+    return await get_current_user(credentials)

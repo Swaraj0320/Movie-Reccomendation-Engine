@@ -3,8 +3,10 @@
 import asyncio
 from collections import Counter
 
-from fastapi import APIRouter, Depends, HTTPException
+from bson import ObjectId
+from fastapi import APIRouter, Depends, HTTPException, status
 
+from app.core.config import settings
 from app.db import get_database
 from app.models.user import UserOut
 from app.routes.auth import get_current_admin
@@ -54,10 +56,39 @@ async def get_admin_users(current_user: UserOut = Depends(get_current_admin)):
         response.append({
             "id": user_id,
             "email": user["email"],
-            "created_at": user.get("created_at"),
+            "created_at": user.get("created_at") or user["_id"].generation_time,
             "top_genre": genre_counts.most_common(1)[0][0] if genre_counts else None,
+            "profile_picture_url": user.get("profile_picture_url"),
         })
     return response
+
+
+@router.delete("/users/{user_id}")
+async def delete_admin_user(
+    user_id: str,
+    current_user: UserOut = Depends(get_current_admin),
+):
+    """Delete a user and all associated ratings, watchlist, and history data."""
+    if user_id == settings.admin_user_id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="The administrator account cannot be deleted",
+        )
+    try:
+        object_id = ObjectId(user_id)
+    except Exception as error:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found") from error
+
+    db = get_database()
+    result = await db.users.delete_one({"_id": object_id})
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    await asyncio.gather(
+        db.ratings.delete_many({"user_id": user_id}),
+        db.watchlist.delete_many({"user_id": user_id}),
+        db.watch_history.delete_many({"user_id": user_id}),
+    )
+    return {"message": "User deleted", "user_id": user_id}
 
 
 @router.get("/stats")

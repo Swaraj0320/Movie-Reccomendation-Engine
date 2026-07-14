@@ -77,7 +77,7 @@ class UserProfileUpdate(BaseModel):
 
     name: str | None = Field(default=None, min_length=1, max_length=100)
     phone: str | None = Field(default=None, max_length=30)
-    profile_picture_url: str | None = Field(default=None, max_length=2048)
+    profile_picture_url: str | None = Field(default=None, max_length=3_000_000)
 
     @field_validator("name")
     @classmethod
@@ -100,7 +100,11 @@ class UserProfileUpdate(BaseModel):
         if value is None or not value.strip():
             return None
         value = value.strip()
+        if value.startswith("data:image/"):
+            if ";base64," not in value:
+                raise ValueError("Profile picture data must be base64 encoded")
+            return value
         parsed_url = urlparse(value)
         if parsed_url.scheme not in {"http", "https"} or not parsed_url.netloc:
-            raise ValueError("Profile picture URL must use http or https")
+            raise ValueError("Profile picture must be an image upload or http/https URL")
         return value

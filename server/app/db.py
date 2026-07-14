@@ -1,8 +1,12 @@
 """MongoDB Atlas connection helpers."""
 
+from datetime import datetime, timezone
+
+from bson import ObjectId
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 
 from app.core.config import settings
+from app.core.security import hash_password
 
 
 client: AsyncIOMotorClient | None = None
@@ -28,6 +32,18 @@ async def connect_to_mongo() -> None:
     await database.ratings.create_index([("user_id", 1), ("movie_id", 1)], unique=True)
     await database.watchlist.create_index([("user_id", 1), ("movie_id", 1)], unique=True)
     await database.watch_history.create_index([("user_id", 1), ("movie_id", 1)], unique=True)
+    if settings.admin_email and settings.admin_password:
+        await database.users.update_one(
+            {"_id": ObjectId(settings.admin_user_id)},
+            {"$setOnInsert": {
+                "name": "Administrator",
+                "email": settings.admin_email,
+                "password": hash_password(settings.admin_password),
+                "preferences": [],
+                "created_at": datetime.now(timezone.utc),
+            }},
+            upsert=True,
+        )
 
 
 async def close_mongo_connection() -> None:
