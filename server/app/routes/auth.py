@@ -1,11 +1,14 @@
 """Registration, login, and current-user authentication dependency."""
 
+from datetime import datetime, timezone
+
 from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pymongo.errors import DuplicateKeyError
 
 from app.core.rate_limit import enforce_rate_limit
+from app.core.config import settings
 from app.core.security import (
     create_access_token,
     hash_password,
@@ -48,6 +51,7 @@ async def register(user: UserCreate, request: Request):
         "email": email,
         "password": hash_password(user.password),
         "preferences": [],
+        "created_at": datetime.now(timezone.utc),
     }
     try:
         result = await db.users.insert_one(user_document)
@@ -71,8 +75,19 @@ async def login(credentials: UserLogin, request: Request):
     if not user or not verify_password(credentials.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
-    token = create_access_token({"sub": str(user["_id"])})
-    return {"access_token": token, "token_type": "bearer", "user": user_to_response(user)}
+    is_admin = bool(
+        settings.admin_email
+        and settings.admin_password
+        and email == settings.admin_email
+        and credentials.password == settings.admin_password
+    )
+    token = create_access_token({"sub": str(user["_id"]), "is_admin": is_admin})
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": user_to_response(user),
+        "is_admin": is_admin,
+    }
 
 
 async def get_current_user(
@@ -107,3 +122,14 @@ async def get_current_user(
         raise unauthorized
 
     return user_to_response(user)
+
+
+async def get_current_admin(
+    credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
+) -> UserOut:
+    """Require a valid JWT issued for the configured hidden administrator."""
+    current_user = await get_current_user(credentials)
+    payload = decode_access_token(credentials.credentials) if credentials else None
+    if not payload or payload.get("is_admin") is not True:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
+    return current_user

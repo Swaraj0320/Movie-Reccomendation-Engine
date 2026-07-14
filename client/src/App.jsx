@@ -4,8 +4,10 @@ import Footer from "./components/Footer";
 import CursorGlow from "./components/CursorGlow";
 import Navbar from "./components/Navbar";
 import About from "./pages/About";
+import Admin from "./pages/Admin";
 import Contact from "./pages/Contact";
 import Home from "./pages/Home";
+import History from "./pages/History";
 import Login from "./pages/Login";
 import MovieDetails from "./pages/MovieDetails";
 import MyRatings from "./pages/MyRatings";
@@ -27,6 +29,7 @@ function App() {
       <main className="flex-1">
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/admin" element={<Admin />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/onboarding" element={<Onboarding />} />
@@ -34,6 +37,7 @@ function App() {
           <Route path="/movies/:movieId" element={<MovieDetails />} />
           <Route path="/recommendations" element={<Recommendations />} />
           <Route path="/watchlist" element={<Watchlist />} />
+          <Route path="/history" element={<History />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/my-ratings" element={<MyRatings />} />
           <Route path="/about" element={<About />} />

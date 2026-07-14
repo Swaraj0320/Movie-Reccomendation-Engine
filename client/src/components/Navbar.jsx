@@ -35,6 +35,7 @@ function Navbar() {
           <NavLink to="/" end className={navLinkClass}>Discover</NavLink>
           <NavLink to="/search" className={navLinkClass}>Search</NavLink>
           <NavLink to="/recommendations" className={navLinkClass}>For You</NavLink>
+          <NavLink to="/history" className={navLinkClass}>History</NavLink>
         </div>
         <div className="flex items-center justify-self-end gap-1.5 sm:gap-2">
           <Link to="/search" aria-label="Search movies" className="rounded-md p-2 text-zinc-400 transition-colors hover:text-amber"><Search size={17} /></Link>
@@ -57,7 +58,7 @@ function Navbar() {
           )}
           <button onClick={() => setMobileOpen((isOpen) => !isOpen)} aria-label="Toggle navigation menu" aria-expanded={mobileOpen} className="rounded-md p-2 text-zinc-400 transition hover:text-amber md:hidden">{mobileOpen ? <X size={18} /> : <Menu size={18} />}</button>
         </div>
-        {mobileOpen && <div className="absolute inset-x-5 top-[3.5rem] border border-white/10 bg-[#111217]/95 p-2 shadow-2xl shadow-black/30 backdrop-blur-xl sm:inset-x-8 md:hidden"><NavLink to="/" end onClick={closeMobileMenu} className={({ isActive }) => `block px-3 py-3 text-xs uppercase tracking-[0.16em] ${isActive ? "text-amber" : "text-zinc-400"}`}>Discover</NavLink><NavLink to="/search" onClick={closeMobileMenu} className={({ isActive }) => `block px-3 py-3 text-xs uppercase tracking-[0.16em] ${isActive ? "text-amber" : "text-zinc-400"}`}>Search</NavLink><NavLink to="/recommendations" onClick={closeMobileMenu} className={({ isActive }) => `block px-3 py-3 text-xs uppercase tracking-[0.16em] ${isActive ? "text-amber" : "text-zinc-400"}`}>For You</NavLink></div>}
+        {mobileOpen && <div className="absolute inset-x-5 top-[3.5rem] border border-white/10 bg-[#111217]/95 p-2 shadow-2xl shadow-black/30 backdrop-blur-xl sm:inset-x-8 md:hidden"><NavLink to="/" end onClick={closeMobileMenu} className={({ isActive }) => `block px-3 py-3 text-xs uppercase tracking-[0.16em] ${isActive ? "text-amber" : "text-zinc-400"}`}>Discover</NavLink><NavLink to="/search" onClick={closeMobileMenu} className={({ isActive }) => `block px-3 py-3 text-xs uppercase tracking-[0.16em] ${isActive ? "text-amber" : "text-zinc-400"}`}>Search</NavLink><NavLink to="/recommendations" onClick={closeMobileMenu} className={({ isActive }) => `block px-3 py-3 text-xs uppercase tracking-[0.16em] ${isActive ? "text-amber" : "text-zinc-400"}`}>For You</NavLink><NavLink to="/history" onClick={closeMobileMenu} className={({ isActive }) => `block px-3 py-3 text-xs uppercase tracking-[0.16em] ${isActive ? "text-amber" : "text-zinc-400"}`}>History</NavLink></div>}
       </nav>
     </header>
   );

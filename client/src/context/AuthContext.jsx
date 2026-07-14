@@ -28,8 +28,8 @@ export function AuthProvider({ children }) {
 
   const login = async (email, password) => {
     const response = await api.post("/api/auth/login", { email, password });
-    saveSession(response.data.access_token, response.data.user);
-    return response.data.user;
+    saveSession(response.data.access_token, { ...response.data.user, is_admin: response.data.is_admin === true });
+    return response.data;
   };
 
   const register = async (name, email, password) => {
@@ -46,8 +46,9 @@ export function AuthProvider({ children }) {
   };
 
   const updateUser = (userData) => {
-    localStorage.setItem("user", JSON.stringify(userData));
-    setUser(userData);
+    const updatedUser = { ...user, ...userData, is_admin: user?.is_admin === true };
+    localStorage.setItem("user", JSON.stringify(updatedUser));
+    setUser(updatedUser);
   };
 
   const value = useMemo(

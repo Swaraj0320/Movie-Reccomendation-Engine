@@ -27,6 +27,7 @@ async def connect_to_mongo() -> None:
     await database.users.create_index("email", unique=True)
     await database.ratings.create_index([("user_id", 1), ("movie_id", 1)], unique=True)
     await database.watchlist.create_index([("user_id", 1), ("movie_id", 1)], unique=True)
+    await database.watch_history.create_index([("user_id", 1), ("movie_id", 1)], unique=True)
 
 
 async def close_mongo_connection() -> None:

@@ -51,6 +51,8 @@ class Settings:
     secret_key = os.getenv("SECRET_KEY", "")
     environment = os.getenv("ENVIRONMENT", "development").lower()
     frontend_origins = os.getenv("FRONTEND_ORIGINS", "")
+    admin_email = os.getenv("ADMIN_EMAIL", "").strip().lower()
+    admin_password = os.getenv("ADMIN_PASSWORD", "")
 
     def cors_origins(self) -> list[str]:
         """Return explicit browser origins, never a credentialed wildcard."""

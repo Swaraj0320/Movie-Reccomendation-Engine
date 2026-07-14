@@ -9,6 +9,8 @@ from app.core.config import settings
 from app.core.security import validate_security_settings
 from app.db import close_mongo_connection, connect_to_mongo
 from app.routes.auth import router as auth_router
+from app.routes.admin import router as admin_router
+from app.routes.history import router as history_router
 from app.routes.movies import router as movies_router
 from app.routes.recommend import router as recommend_router
 from app.routes.ratings import router as ratings_router
@@ -47,6 +49,8 @@ app.include_router(ratings_router, prefix=f"{settings.api_prefix}/ratings")
 # User profile and saved watchlist endpoints are protected by their own routers.
 app.include_router(user_router, prefix=f"{settings.api_prefix}/user")
 app.include_router(watchlist_router, prefix=f"{settings.api_prefix}/watchlist")
+app.include_router(history_router, prefix=f"{settings.api_prefix}/history")
+app.include_router(admin_router, prefix=f"{settings.api_prefix}/admin")
 
 
 @app.get("/", tags=["Health"])

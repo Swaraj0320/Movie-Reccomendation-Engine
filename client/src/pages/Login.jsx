@@ -17,8 +17,8 @@ function Login() {
     setIsSubmitting(true);
 
     try {
-      await login(email, password);
-      navigate("/");
+      const session = await login(email, password);
+      navigate(session.is_admin ? "/admin" : "/");
     } catch (requestError) {
       setError(requestError.response?.data?.detail || "Unable to sign in. Please try again.");
     } finally {
