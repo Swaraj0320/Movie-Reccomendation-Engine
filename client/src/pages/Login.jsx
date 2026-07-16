@@ -42,7 +42,7 @@ function Login() {
         </form>
         <p className="mt-6 text-sm text-zinc-400">Don't have an account? <Link className="font-semibold text-amber hover:text-amber-soft" to="/signup">Sign up</Link></p>
       </section>
-      <p className="mt-4 text-center text-xs font-normal text-zinc-400">Made by SalazarMotionlab</p>
+      <p className="mt-4 text-center text-xs font-normal text-zinc-400">Made By Swaraj & Siddhi</p>
       </div>
     </div>
   );

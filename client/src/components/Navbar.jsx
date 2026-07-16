@@ -29,7 +29,7 @@ function Navbar() {
       <nav className="relative mx-auto grid h-14 max-w-[1600px] grid-cols-[1fr_auto_1fr] items-center px-5 sm:px-8 lg:px-12">
         <Link to="/" className="flex min-w-0 items-center gap-2 text-zinc-50">
           <Clapperboard size={18} className="shrink-0 text-amber" strokeWidth={1.7} />
-          <span className="truncate font-display text-[14px] font-medium tracking-[-0.02em] sm:text-[15px]">NFAK Recommendation Engine</span>
+          <span className="truncate font-display text-[14px] font-medium tracking-[-0.02em] sm:text-[15px]">Novexa</span>
         </Link>
         <div className="hidden items-center gap-8 md:flex">
           <NavLink to="/" end className={navLinkClass}>Discover</NavLink>

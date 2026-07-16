@@ -42,7 +42,7 @@ load_env_file()
 class Settings:
     """Central settings object used throughout the backend."""
 
-    project_name = "Movie Recommendation API"
+    project_name = "Novexa - Smart Movie Recommendation Engine API"
     api_prefix = "/api"
     mongodb_url = os.getenv("MONGODB_URL", "")
     mongodb_database = os.getenv("MONGODB_DATABASE", "movie_recommendation")

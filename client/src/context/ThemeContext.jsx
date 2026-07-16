@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 
 const ThemeContext = createContext(null);
-const THEME_STORAGE_KEY = "nfak-theme";
+const THEME_STORAGE_KEY = "novexa-theme";
 
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => localStorage.getItem(THEME_STORAGE_KEY) === "light" ? "light" : "dark");
