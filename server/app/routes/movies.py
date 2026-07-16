@@ -73,29 +73,6 @@ def movie_summary(movie: dict) -> dict:
     }
 
 
-def watch_providers_summary(data: dict, region: str = "IN") -> dict:
-    """Select India-specific provider fields for the movie-details UI."""
-    regional_data = data.get("results", {}).get(region)
-    if not regional_data:
-        return {"region": region, "link": None, "categories": {}}
-
-    categories = {}
-    for category in ("flatrate", "rent", "buy"):
-        providers = regional_data.get(category, [])
-        if providers:
-            categories[category] = [
-                {
-                    "id": provider.get("provider_id"),
-                    "name": provider.get("provider_name", ""),
-                    "logo_path": provider.get("logo_path"),
-                }
-                for provider in providers
-            ]
-
-    # TMDB supplies one JustWatch URL per movie/region, not per provider.
-    return {"region": region, "link": regional_data.get("link"), "categories": categories}
-
-
 @router.get("/trending")
 async def get_trending_movies():
     """Return a broad, India-aware mix of Hindi and global trending movies.
@@ -192,13 +169,6 @@ async def get_movie_trailer(movie_id: int = Path(gt=0, le=10_000_000)):
         None,
     )
     return {"key": trailer.get("key") if trailer else None}
-
-
-@router.get("/{movie_id}/watch-providers")
-async def get_movie_watch_providers(movie_id: int = Path(gt=0, le=10_000_000)):
-    """Return subscription, rental, and purchase providers for India."""
-    data = await tmdb_get(f"/movie/{movie_id}/watch/providers")
-    return watch_providers_summary(data)
 
 
 @router.get("/{movie_id}")
