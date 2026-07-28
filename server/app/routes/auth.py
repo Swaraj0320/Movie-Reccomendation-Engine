@@ -136,7 +136,16 @@ async def google_login(credentials: GoogleTokenLogin, request: Request):
         raise HTTPException(status_code=401, detail="Google account email could not be verified")
 
     db = get_database()
-    user = await db.users.find_one({"email": email})
+    is_admin = bool(settings.admin_email and email == settings.admin_email)
+    if is_admin:
+        # Reuse the reserved administrator record so every protected route sees
+        # the same identity as a password-based administrator login.
+        user = await db.users.find_one({"_id": ObjectId(settings.admin_user_id)})
+        if not user:
+            raise HTTPException(status_code=503, detail="Administrator account is not ready")
+    else:
+        user = await db.users.find_one({"email": email})
+
     if not user:
         # Password login remains unsupported for Google-created accounts: this
         # random hash is intentionally unknown to everyone, including the user.
@@ -161,12 +170,12 @@ async def google_login(credentials: GoogleTokenLogin, request: Request):
             user_document["_id"] = result.inserted_id
             user = user_document
 
-    token = create_access_token({"sub": str(user["_id"]), "is_admin": False})
+    token = create_access_token({"sub": str(user["_id"]), "is_admin": is_admin})
     return {
         "access_token": token,
         "token_type": "bearer",
         "user": user_to_response(user),
-        "is_admin": False,
+        "is_admin": is_admin,
     }
 
 
