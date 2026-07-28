@@ -1,4 +1,5 @@
 import { Route, Routes } from "react-router-dom";
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 import Footer from "./components/Footer";
 import CursorGlow from "./components/CursorGlow";
@@ -22,6 +23,7 @@ import Watchlist from "./pages/Watchlist";
 
 function App() {
   return (
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
     <div className="relative isolate min-h-screen bg-ink text-zinc-100">
       <CursorGlow />
       <div className="relative z-10 flex min-h-screen flex-col">
@@ -49,6 +51,7 @@ function App() {
       <Footer />
       </div>
     </div>
+    </GoogleOAuthProvider>
   );
 }
 

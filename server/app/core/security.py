@@ -35,6 +35,8 @@ def _get_secret_key() -> str:
 def validate_security_settings() -> None:
     """Validate security-critical configuration during application startup."""
     _get_secret_key()
+    if not settings.google_client_id:
+        raise RuntimeError("GOOGLE_CLIENT_ID must be set to enable Google sign-in.")
 
 
 def create_access_token(data: dict) -> str:

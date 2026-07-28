@@ -3,9 +3,10 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 import { useAuth } from "../context/AuthContext";
+import GoogleSignInButton from "../components/GoogleSignInButton";
 
 function Login() {
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,6 +16,7 @@ function Login() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (isSubmitting) return;
     setError("");
     setIsSubmitting(true);
 
@@ -23,6 +25,20 @@ function Login() {
       navigate(session.is_admin ? "/admin" : "/");
     } catch (requestError) {
       setError(requestError.response?.data?.detail || "Unable to sign in. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleGoogleCredential = async (credential) => {
+    if (isSubmitting) return;
+    setError("");
+    setIsSubmitting(true);
+    try {
+      const session = await loginWithGoogle(credential);
+      navigate(session.is_admin ? "/admin" : "/");
+    } catch (requestError) {
+      setError(requestError.response?.data?.detail || "Unable to sign in with Google. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -40,9 +56,11 @@ function Login() {
           {error && <p className="rounded-xl border border-red-900/60 bg-red-950/30 px-3 py-2 text-sm text-red-300">{error}</p>}
           <button className="primary-button w-full disabled:cursor-not-allowed disabled:opacity-60" type="submit" disabled={isSubmitting}>{isSubmitting ? "Signing in…" : "Sign in"}</button>
         </form>
+        <div className="my-6 flex items-center gap-3 text-xs uppercase tracking-[0.2em] text-zinc-500"><span className="h-px flex-1 bg-line" />or<span className="h-px flex-1 bg-line" /></div>
+        <GoogleSignInButton disabled={isSubmitting} onCredential={handleGoogleCredential} onError={setError} />
         <p className="mt-6 text-sm text-zinc-400">Don't have an account? <Link className="font-semibold text-amber hover:text-amber-soft" to="/signup">Sign up</Link></p>
       </section>
-      <p className="mt-4 text-center text-xs font-normal text-zinc-400">Made By Swaraj & Siddhi</p>
+      <p className="mt-4 text-center text-xs font-normal text-zinc-400">Developed and Maintained by Siddhi & Swaraj</p>
       </div>
     </div>
   );

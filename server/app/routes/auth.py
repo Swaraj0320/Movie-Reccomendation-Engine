@@ -1,10 +1,13 @@
 """Registration, login, and current-user authentication dependency."""
 
 from datetime import datetime, timezone
+import secrets
 
 from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from google.auth.transport import requests as google_requests
+from google.oauth2 import id_token
 from pymongo.errors import DuplicateKeyError
 
 from app.core.rate_limit import enforce_rate_limit
@@ -16,7 +19,7 @@ from app.core.security import (
     decode_access_token,
 )
 from app.db import get_database
-from app.models.user import UserCreate, UserLogin, UserOut
+from app.models.user import GoogleTokenLogin, UserCreate, UserLogin, UserOut
 
 
 router = APIRouter(tags=["Authentication"])
@@ -94,8 +97,69 @@ async def login(credentials: UserLogin, request: Request):
     user = await db.users.find_one({"email": email})
 
     # Use the same message for a missing account and an incorrect password.
-    if not user or not verify_password(credentials.password, user["password"]):
+    if (
+        not user
+        or user.get("password_is_unusable") is True
+        or not user.get("password")
+        or not verify_password(credentials.password, user["password"])
+    ):
         raise HTTPException(status_code=401, detail="Invalid credentials")
+
+    token = create_access_token({"sub": str(user["_id"]), "is_admin": False})
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": user_to_response(user),
+        "is_admin": False,
+    }
+
+
+@router.post("/google")
+async def google_login(credentials: GoogleTokenLogin, request: Request):
+    """Verify a Google ID token, then log in or provision the matching user."""
+    enforce_rate_limit(request, "google_login", max_attempts=10, window_seconds=900)
+    if not settings.google_client_id:
+        raise HTTPException(status_code=503, detail="Google sign-in is not configured")
+
+    try:
+        payload = id_token.verify_oauth2_token(
+            credentials.credential,
+            google_requests.Request(),
+            settings.google_client_id,
+        )
+    except Exception as error:
+        # Never accept an unverified email or expose token-verification internals.
+        raise HTTPException(status_code=401, detail="Invalid Google sign-in token") from error
+
+    email = payload.get("email", "").strip().lower()
+    if not email or payload.get("email_verified") is not True:
+        raise HTTPException(status_code=401, detail="Google account email could not be verified")
+
+    db = get_database()
+    user = await db.users.find_one({"email": email})
+    if not user:
+        # Password login remains unsupported for Google-created accounts: this
+        # random hash is intentionally unknown to everyone, including the user.
+        google_name = str(payload.get("name") or "").strip()[:100]
+        user_document = {
+            "name": google_name or email.split("@", 1)[0],
+            "email": email,
+            "password": hash_password(secrets.token_urlsafe(48)),
+            "password_is_unusable": True,
+            "auth_provider": "google",
+            "preferences": [],
+            "created_at": datetime.now(timezone.utc),
+        }
+        try:
+            result = await db.users.insert_one(user_document)
+        except DuplicateKeyError:
+            # A concurrent first Google login may have inserted this email.
+            user = await db.users.find_one({"email": email})
+            if not user:
+                raise HTTPException(status_code=409, detail="Unable to create Google account")
+        else:
+            user_document["_id"] = result.inserted_id
+            user = user_document
 
     token = create_access_token({"sub": str(user["_id"]), "is_admin": False})
     return {

@@ -51,6 +51,8 @@ class Settings:
     secret_key = os.getenv("SECRET_KEY", "")
     environment = os.getenv("ENVIRONMENT", "development").lower()
     frontend_origins = os.getenv("FRONTEND_ORIGINS", "")
+    # OAuth audience used to verify Google ID tokens issued to the web client.
+    google_client_id = os.getenv("GOOGLE_CLIENT_ID", "").strip()
     admin_email = os.getenv("ADMIN_EMAIL", "").strip().lower()
     admin_password = os.getenv("ADMIN_PASSWORD", "")
     admin_user_id = "000000000000000000000001"

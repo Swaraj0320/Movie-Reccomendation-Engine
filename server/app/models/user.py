@@ -61,6 +61,12 @@ class UserLogin(BaseModel):
         return normalize_email(value)
 
 
+class GoogleTokenLogin(BaseModel):
+    """Google Identity Services ID token sent by the browser after popup sign-in."""
+
+    credential: str = Field(min_length=1, max_length=10_000)
+
+
 class UserOut(BaseModel):
     """Safe user data returned to the client (password is never included)."""
 

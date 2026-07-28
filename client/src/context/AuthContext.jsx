@@ -32,6 +32,12 @@ export function AuthProvider({ children }) {
     return response.data;
   };
 
+  const loginWithGoogle = async (credential) => {
+    const response = await api.post("/api/auth/google", { credential });
+    saveSession(response.data.access_token, { ...response.data.user, is_admin: response.data.is_admin === true });
+    return response.data;
+  };
+
   const register = async (name, email, password) => {
     const response = await api.post("/api/auth/register", { name, email, password });
     saveSession(response.data.access_token, response.data.user);
@@ -52,7 +58,7 @@ export function AuthProvider({ children }) {
   };
 
   const value = useMemo(
-    () => ({ token, user, login, register, logout, updateUser }),
+    () => ({ token, user, login, loginWithGoogle, register, logout, updateUser }),
     [token, user],
   );
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
