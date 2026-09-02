@@ -15,17 +15,72 @@ function Signup() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const validateSignupForm = () => {
+    const trimmedName = name.trim();
+    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedPassword = password.trim();
+
+    // Check for empty fields
+    if (!trimmedName || !trimmedEmail || !trimmedPassword) {
+      setError("All fields are required.");
+      return false;
+    }
+
+    // Name must contain at least one letter
+    if (!/[a-zA-Z]/.test(trimmedName)) {
+      setError("Name must contain at least one letter.");
+      return false;
+    }
+
+    // Valid email format
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setError("Please enter a valid email address.");
+      return false;
+    }
+
+    // Password cannot equal or contain email or name (case-insensitive)
+    const lowerPassword = trimmedPassword.toLowerCase();
+    const lowerEmail = trimmedEmail.toLowerCase();
+    const lowerName = trimmedName.toLowerCase();
+
+    if (lowerPassword === lowerEmail) {
+      setError("Password cannot be the same as your email.");
+      return false;
+    }
+    if (lowerPassword.includes(lowerEmail)) {
+      setError("Password cannot contain your email address.");
+      return false;
+    }
+    if (lowerPassword.includes(lowerName)) {
+      setError("Password cannot contain your name.");
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (isSubmitting) return;
     setError("");
+
+    if (!validateSignupForm()) {
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      await register(name, email, password);
+      await register(name.trim(), email.trim().toLowerCase(), password.trim());
       navigate("/onboarding");
     } catch (requestError) {
-      setError(requestError.response?.data?.detail || "Unable to create your account. Please try again.");
+      const errorDetail = requestError.response?.data?.detail;
+      // Map backend errors to friendly messages
+      if (errorDetail?.includes("already registered") || errorDetail?.includes("Email already")) {
+        setError("This email address is already registered. Please sign in instead.");
+      } else {
+        setError(errorDetail || "Unable to create your account. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }

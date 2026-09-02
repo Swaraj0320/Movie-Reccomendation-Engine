@@ -3,7 +3,7 @@
 import re
 from urllib.parse import urlparse
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 EMAIL_PATTERN = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
@@ -14,6 +14,9 @@ def normalize_name(value: str) -> str:
     value = value.strip()
     if not value:
         raise ValueError("Name cannot be blank")
+    # Name must contain at least one letter
+    if not any(char.isalpha() for char in value):
+        raise ValueError("Name must contain at least one letter")
     return value
 
 
@@ -46,7 +49,23 @@ class UserCreate(BaseModel):
     def validate_password(cls, value: str) -> str:
         if not all((any(char.islower() for char in value), any(char.isupper() for char in value), any(char.isdigit() for char in value))):
             raise ValueError("Password must include upper-case, lower-case, and numeric characters")
-        return value
+        return value.strip()
+
+    @model_validator(mode="after")
+    def validate_password_not_contains_email_or_name(self) -> "UserCreate":
+        """Ensure password doesn't contain email or name."""
+        password_lower = self.password.lower()
+        email_lower = self.email.lower()
+        name_lower = self.name.lower()
+
+        if password_lower == email_lower:
+            raise ValueError("Password cannot be the same as your email")
+        if email_lower in password_lower:
+            raise ValueError("Password cannot contain your email address")
+        if name_lower in password_lower:
+            raise ValueError("Password cannot contain your name")
+        
+        return self
 
 
 class UserLogin(BaseModel):

@@ -14,17 +14,42 @@ function Login() {
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const validateLoginForm = () => {
+    const trimmedEmail = email.trim().toLowerCase();
+    const trimmedPassword = password.trim();
+
+    // Check for empty fields
+    if (!trimmedEmail || !trimmedPassword) {
+      setError("Email and password are required.");
+      return false;
+    }
+
+    // Valid email format
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setError("Please enter a valid email address.");
+      return false;
+    }
+
+    return true;
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     if (isSubmitting) return;
     setError("");
+
+    if (!validateLoginForm()) {
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      const session = await login(email, password);
+      const session = await login(email.trim().toLowerCase(), password.trim());
       navigate(session.is_admin ? "/admin" : "/");
     } catch (requestError) {
-      setError(requestError.response?.data?.detail || "Unable to sign in. Please try again.");
+      // Use generic error message to prevent user enumeration
+      setError("Invalid email or password.");
     } finally {
       setIsSubmitting(false);
     }

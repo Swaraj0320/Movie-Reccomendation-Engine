@@ -6,7 +6,8 @@ import CursorGlow from "./components/CursorGlow";
 import Navbar from "./components/Navbar";
 import About from "./pages/About";
 import Admin from "./pages/Admin";
-import Contact from "./pages/Contact";
+// Contact — temporarily hidden, uncomment to re-enable
+// import Contact from "./pages/Contact";
 import Home from "./pages/Home";
 import History from "./pages/History";
 import Login from "./pages/Login";
@@ -43,7 +44,8 @@ function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/my-ratings" element={<MyRatings />} />
           <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
+          {/* Contact — temporarily hidden, uncomment to re-enable */}
+          {/* <Route path="/contact" element={<Contact />} /> */}
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
         </Routes>
