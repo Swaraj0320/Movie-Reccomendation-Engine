@@ -228,6 +228,15 @@ async def get_current_user(
     return user_to_response(user)
 
 
+@router.get("/me")
+async def current_session(current_user: UserOut = Depends(get_current_user)):
+    """Return the current user and calculate admin access from the allowlist."""
+    return {
+        "user": current_user,
+        "is_admin": current_user.email in settings.admin_emails,
+    }
+
+
 async def get_current_admin(
     credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme),
 ) -> UserOut:
