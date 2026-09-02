@@ -54,15 +54,6 @@ class Settings:
     # OAuth audience used to verify Google ID tokens issued to the web client.
     google_client_id = os.getenv("GOOGLE_CLIENT_ID", "").strip()
     admin_email = os.getenv("ADMIN_EMAIL", "").strip().lower()
-    # Comma-separated allowlist for administrator access. ADMIN_EMAIL remains
-    # supported as the primary administrator and reserved MongoDB account.
-    admin_emails = tuple(dict.fromkeys(
-        email.strip().lower()
-        for email in os.getenv("ADMIN_EMAILS", "").split(",")
-        if email.strip()
-    ))
-    if admin_email and admin_email not in admin_emails:
-        admin_emails = (admin_email, *admin_emails)
     admin_password = os.getenv("ADMIN_PASSWORD", "")
     admin_user_id = "000000000000000000000001"
 

@@ -62,14 +62,8 @@ async def register(user: UserCreate, request: Request):
         raise HTTPException(status_code=400, detail="Email already registered") from error
     user_document["_id"] = result.inserted_id
 
-    is_admin = email in settings.admin_emails
-    token = create_access_token({"sub": str(result.inserted_id), "is_admin": is_admin})
-    return {
-        "access_token": token,
-        "token_type": "bearer",
-        "user": user_to_response(user_document),
-        "is_admin": is_admin,
-    }
+    token = create_access_token({"sub": str(result.inserted_id)})
+    return {"access_token": token, "token_type": "bearer", "user": user_to_response(user_document)}
 
 
 @router.post("/login")
@@ -114,13 +108,12 @@ async def login(credentials: UserLogin, request: Request):
     if not verify_password(credentials.password, user["password"]):
         raise HTTPException(status_code=401, detail="Password is incorrect")
 
-    is_admin = email in settings.admin_emails
-    token = create_access_token({"sub": str(user["_id"]), "is_admin": is_admin})
+    token = create_access_token({"sub": str(user["_id"]), "is_admin": False})
     return {
         "access_token": token,
         "token_type": "bearer",
         "user": user_to_response(user),
-        "is_admin": is_admin,
+        "is_admin": False,
     }
 
 
@@ -146,9 +139,8 @@ async def google_login(credentials: GoogleTokenLogin, request: Request):
         raise HTTPException(status_code=401, detail="Google account email could not be verified")
 
     db = get_database()
-    is_primary_admin = bool(settings.admin_email and email == settings.admin_email)
-    is_admin = email in settings.admin_emails
-    if is_primary_admin:
+    is_admin = bool(settings.admin_email and email == settings.admin_email)
+    if is_admin:
         # Reuse the reserved administrator record so every protected route sees
         # the same identity as a password-based administrator login.
         user = await db.users.find_one({"_id": ObjectId(settings.admin_user_id)})
@@ -241,6 +233,6 @@ async def get_current_admin(
         raise unauthorized
 
     current_user = await get_current_user(credentials)
-    if current_user.email not in settings.admin_emails:
+    if current_user.id != str(settings.admin_user_id):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
     return current_user
