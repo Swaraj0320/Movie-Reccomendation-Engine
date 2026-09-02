@@ -80,12 +80,17 @@ async def login(credentials: UserLogin, request: Request):
         and email == settings.admin_email
         and credentials.password == settings.admin_password
     ):
+        try:
+            admin_oid = ObjectId(settings.admin_user_id)
+        except Exception as error:
+            raise HTTPException(status_code=503, detail="Administrator account is not properly configured") from error
         admin_user = await get_database().users.find_one(
-            {"_id": ObjectId(settings.admin_user_id)}
+            {"_id": admin_oid}
         )
         if not admin_user:
             raise HTTPException(status_code=503, detail="Administrator account is not ready")
-        token = create_access_token({"sub": settings.admin_user_id, "is_admin": True})
+        # Ensure sub is always a string in the token payload
+        token = create_access_token({"sub": str(admin_oid), "is_admin": True})
         return {
             "access_token": token,
             "token_type": "bearer",
@@ -197,12 +202,16 @@ async def get_current_user(
         raise unauthorized
 
     payload = decode_access_token(credentials.credentials)
-    user_id = payload.get("sub") if payload else None
+    if not payload:
+        raise unauthorized
+    
+    user_id = payload.get("sub")
     if not user_id:
         raise unauthorized
 
     try:
-        object_id = ObjectId(user_id)
+        # user_id should always be a string (from JWT payload)
+        object_id = ObjectId(str(user_id))
     except Exception:
         raise unauthorized
 
@@ -228,6 +237,11 @@ async def get_current_admin(
     payload = decode_access_token(credentials.credentials)
     if not payload:
         raise unauthorized
-    if payload.get("is_admin") is not True or payload.get("sub") != settings.admin_user_id:
+    
+    # Ensure both sub and admin_user_id are strings for consistent comparison
+    token_sub = str(payload.get("sub", ""))
+    admin_id = str(settings.admin_user_id)
+    
+    if payload.get("is_admin") is not True or token_sub != admin_id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
     return await get_current_user(credentials)
