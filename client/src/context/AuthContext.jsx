@@ -40,7 +40,7 @@ export function AuthProvider({ children }) {
 
   const register = async (name, email, password) => {
     const response = await api.post("/api/auth/register", { name, email, password });
-    saveSession(response.data.access_token, response.data.user);
+    saveSession(response.data.access_token, { ...response.data.user, is_admin: false });
     return response.data.user;
   };
 

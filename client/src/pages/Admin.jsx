@@ -6,7 +6,7 @@ import api from "../api/axios";
 import { useAuth } from "../context/AuthContext";
 
 function Admin() {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState(null);
   const [users, setUsers] = useState([]);
@@ -20,10 +20,14 @@ function Admin() {
     Promise.all([api.get("/api/admin/stats"), api.get("/api/admin/users")])
       .then(([statsResponse, usersResponse]) => { setStats(statsResponse.data); setUsers(usersResponse.data); })
       .catch((requestError) => {
-        if (requestError.response?.status === 403) { navigate("/", { replace: true }); return; }
+        if ([401, 403].includes(requestError.response?.status)) {
+          logout();
+          navigate("/login", { replace: true });
+          return;
+        }
         setError(requestError.response?.data?.detail || "Unable to load the admin overview.");
       });
-  }, [user, navigate]);
+  }, [user, navigate, logout]);
 
   const deleteUser = async () => {
     if (!pendingDeletion) return;

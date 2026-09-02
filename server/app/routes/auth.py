@@ -101,14 +101,12 @@ async def login(credentials: UserLogin, request: Request):
     db = get_database()
     user = await db.users.find_one({"email": email})
 
-    # Use the same message for a missing account and an incorrect password.
-    if (
-        not user
-        or user.get("password_is_unusable") is True
-        or not user.get("password")
-        or not verify_password(credentials.password, user["password"])
-    ):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+    if not user:
+        raise HTTPException(status_code=401, detail="Email is not registered")
+    if user.get("password_is_unusable") is True or not user.get("password"):
+        raise HTTPException(status_code=401, detail="Password login is not available for this account")
+    if not verify_password(credentials.password, user["password"]):
+        raise HTTPException(status_code=401, detail="Password is incorrect")
 
     token = create_access_token({"sub": str(user["_id"]), "is_admin": False})
     return {
@@ -234,14 +232,7 @@ async def get_current_admin(
     if credentials is None:
         raise unauthorized
 
-    payload = decode_access_token(credentials.credentials)
-    if not payload:
-        raise unauthorized
-    
-    # Ensure both sub and admin_user_id are strings for consistent comparison
-    token_sub = str(payload.get("sub", ""))
-    admin_id = str(settings.admin_user_id)
-    
-    if payload.get("is_admin") is not True or token_sub != admin_id:
+    current_user = await get_current_user(credentials)
+    if current_user.id != str(settings.admin_user_id):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin access required")
-    return await get_current_user(credentials)
+    return current_user

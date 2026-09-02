@@ -6,7 +6,8 @@ from urllib.parse import urlparse
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 
-EMAIL_PATTERN = re.compile(r"^[^\s@]+@[^\s@]+\.[^\s@]+$")
+EMAIL_PATTERN = re.compile(r"^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$")
+NAME_PATTERN = re.compile(r"^[A-Za-z]+(?: [A-Za-z]+)*$")
 PHONE_PATTERN = re.compile(r"^[0-9+()\-\s]{7,30}$")
 
 
@@ -14,15 +15,22 @@ def normalize_name(value: str) -> str:
     value = value.strip()
     if not value:
         raise ValueError("Name cannot be blank")
-    # Name must contain at least one letter
-    if not any(char.isalpha() for char in value):
-        raise ValueError("Name must contain at least one letter")
+    if not NAME_PATTERN.fullmatch(value):
+        raise ValueError("Name can only contain alphabets")
     return value
 
 
 def normalize_email(value: str) -> str:
     value = value.strip().lower()
-    if not EMAIL_PATTERN.fullmatch(value):
+    local_part = value.split("@", 1)[0] if "@" in value else ""
+    if (
+        not EMAIL_PATTERN.fullmatch(value)
+        or len(local_part) > 64
+        or local_part.startswith(".")
+        or local_part.endswith(".")
+        or ".." in local_part
+        or not any(char.isalpha() for char in local_part)
+    ):
         raise ValueError("Enter a valid email address")
     return value
 
@@ -47,9 +55,12 @@ class UserCreate(BaseModel):
     @field_validator("password")
     @classmethod
     def validate_password(cls, value: str) -> str:
+        value = value.strip()
+        if len(value) < 8:
+            raise ValueError("Password must be at least 8 characters")
         if not all((any(char.islower() for char in value), any(char.isupper() for char in value), any(char.isdigit() for char in value))):
             raise ValueError("Password must include upper-case, lower-case, and numeric characters")
-        return value.strip()
+        return value
 
     @model_validator(mode="after")
     def validate_password_not_contains_email_or_name(self):

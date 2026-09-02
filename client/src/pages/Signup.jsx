@@ -26,14 +26,15 @@ function Signup() {
       return false;
     }
 
-    // Name must contain at least one letter
-    if (!/[a-zA-Z]/.test(trimmedName)) {
-      setError("Name must contain at least one letter.");
+    // Names may contain alphabetic characters and single spaces only.
+    if (!/^[A-Za-z]+(?: [A-Za-z]+)*$/.test(trimmedName)) {
+      setError("Name can only contain alphabets.");
       return false;
     }
 
     // Valid email format
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+    const [localPart = ""] = trimmedEmail.split("@");
+    if (!/^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$/.test(trimmedEmail) || localPart.length > 64 || localPart.startsWith(".") || localPart.endsWith(".") || localPart.includes("..") || !/[a-zA-Z]/.test(localPart)) {
       setError("Please enter a valid email address.");
       return false;
     }

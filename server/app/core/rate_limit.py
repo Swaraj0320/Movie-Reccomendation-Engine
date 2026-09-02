@@ -29,6 +29,11 @@ def enforce_rate_limit(
     while attempts and now - attempts[0] >= window_seconds:
         attempts.popleft()
 
+    # Avoid retaining one deque forever for every IP that ever touches the API.
+    if not attempts:
+        _attempts.pop(key, None)
+        attempts = _attempts[key]
+
     if len(attempts) >= max_attempts:
         retry_after = max(1, int(window_seconds - (now - attempts[0])))
         raise HTTPException(

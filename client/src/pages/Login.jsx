@@ -25,7 +25,8 @@ function Login() {
     }
 
     // Valid email format
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+    const [localPart = ""] = trimmedEmail.split("@");
+    if (!/^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,63}$/.test(trimmedEmail) || localPart.length > 64 || localPart.startsWith(".") || localPart.endsWith(".") || localPart.includes("..") || !/[a-zA-Z]/.test(localPart)) {
       setError("Please enter a valid email address.");
       return false;
     }
@@ -48,8 +49,7 @@ function Login() {
       const session = await login(email.trim().toLowerCase(), password.trim());
       navigate(session.is_admin ? "/admin" : "/");
     } catch (requestError) {
-      // Use generic error message to prevent user enumeration
-      setError("Invalid email or password.");
+      setError(requestError.response?.data?.detail || "Unable to sign in. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
