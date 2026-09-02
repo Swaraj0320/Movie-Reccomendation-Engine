@@ -80,6 +80,12 @@ async def delete_admin_user(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found") from error
 
     db = get_database()
+    target_user = await db.users.find_one({"_id": object_id}, {"email": 1})
+    if target_user and target_user.get("email", "").lower() in settings.admin_emails:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="An administrator account cannot be deleted",
+        )
     result = await db.users.delete_one({"_id": object_id})
     if result.deleted_count == 0:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
