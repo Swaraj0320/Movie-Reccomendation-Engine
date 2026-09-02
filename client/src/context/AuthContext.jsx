@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useMemo, useState } from "react";
 
 import api from "../api/axios";
 
@@ -18,32 +18,6 @@ function getSavedUser() {
 export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem("access_token"));
   const [user, setUser] = useState(getSavedUser);
-
-  useEffect(() => {
-    if (!token) return;
-
-    let isCurrent = true;
-    api.get("/api/auth/me")
-      .then((response) => {
-        if (!isCurrent) return;
-        const refreshedUser = {
-          ...response.data.user,
-          is_admin: response.data.is_admin === true,
-        };
-        localStorage.setItem("user", JSON.stringify(refreshedUser));
-        setUser(refreshedUser);
-      })
-      .catch((requestError) => {
-        if (requestError.response?.status === 401 && isCurrent) {
-          localStorage.removeItem("access_token");
-          localStorage.removeItem("user");
-          setToken(null);
-          setUser(null);
-        }
-      });
-
-    return () => { isCurrent = false; };
-  }, [token]);
 
   const saveSession = (accessToken, userData) => {
     localStorage.setItem("access_token", accessToken);
@@ -66,7 +40,7 @@ export function AuthProvider({ children }) {
 
   const register = async (name, email, password) => {
     const response = await api.post("/api/auth/register", { name, email, password });
-    saveSession(response.data.access_token, { ...response.data.user, is_admin: response.data.is_admin === true });
+    saveSession(response.data.access_token, { ...response.data.user, is_admin: false });
     return response.data.user;
   };
 
