@@ -52,7 +52,7 @@ class UserCreate(BaseModel):
         return value.strip()
 
     @model_validator(mode="after")
-    def validate_password_not_contains_email_or_name(self) -> "UserCreate":
+    def validate_password_not_contains_email_or_name(self):
         """Ensure password doesn't contain email or name."""
         password_lower = self.password.lower()
         email_lower = self.email.lower()

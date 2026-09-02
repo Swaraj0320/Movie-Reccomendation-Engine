@@ -17,6 +17,10 @@ class RatingCreate(BaseModel):
         if value is None:
             raise ValueError("Rating is required")
         
+        # Reject any float type (including 5.0)
+        if isinstance(value, float):
+            raise ValueError("Rating must be a whole number (integer) between 1 and 10")
+        
         # If it's a string, try to convert but reject if it contains decimal point
         if isinstance(value, str):
             if "." in value or "," in value:
@@ -25,12 +29,6 @@ class RatingCreate(BaseModel):
                 value = int(value)
             except (ValueError, TypeError):
                 raise ValueError("Rating must be a valid integer between 1 and 10")
-        
-        # Reject floats/decimals (even if they're whole numbers like 5.0)
-        if isinstance(value, float):
-            if value != int(value):
-                raise ValueError("Rating must be a whole number between 1 and 10")
-            value = int(value)
         
         # Ensure it's an int at this point
         if not isinstance(value, int):
