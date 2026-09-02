@@ -3,9 +3,12 @@ import axios from "axios";
 const defaultApiUrl = import.meta.env.DEV
   ? "http://127.0.0.1:8000"
   : "https://movie-recommendation-engine-backend.onrender.com";
+const configuredApiUrl = import.meta.env.VITE_API_URL?.trim();
+const isProductionLocalUrl = !import.meta.env.DEV
+  && /localhost|127\.0\.0\.1/.test(configuredApiUrl || "");
 
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || defaultApiUrl,
+  baseURL: isProductionLocalUrl ? defaultApiUrl : (configuredApiUrl || defaultApiUrl),
   headers: { "Content-Type": "application/json" },
 });
 
