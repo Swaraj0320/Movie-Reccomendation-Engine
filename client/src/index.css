@@ -53,6 +53,10 @@ html.light .text-zinc-400 { color: #52525b; }
 html.light .text-zinc-500 { color: #62626b; }
 html.light .text-zinc-600 { color: #71717a; }
 html.light .text-zinc-700 { color: #52525b; }
+/* Error feedback uses a dedicated light palette so red text remains legible on light surfaces. */
+html.light .border-red-900\/60 { border-color: #fecaca; }
+html.light .bg-red-950\/30 { background-color: #fef2f2; }
+html.light .text-red-300 { color: #b91c1c; }
 html.light .hover\:bg-white\/\[0\.04\]:hover { background-color: #f4f4f5; }
 html.light .group:hover .group-hover\:bg-\[\#1a1a24\] { background-color: #f4f4f5; }
 html.light .site-navbar { border-color: #d4d4d8; background-color: rgb(255 255 255 / 0.86); }
